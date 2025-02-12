@@ -87,6 +87,7 @@ jobs:
            # Apply patches
            cd ./KernelSU
            patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+           patch -p1 --forward < mksu_susfs.patch || true
            cd ../common
            patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
            cp ../../kernel_patches/69_hide_stuff.patch ./
@@ -94,11 +95,7 @@ jobs:
            git add -A && git commit -a -m "BUILD Kernel"
            cd ..
            cd ./msm-kernel && git add -A && git commit -a -m "BUILD Kernel"
-           cd ..
-             
-           cp ../kernel_patches/apk_sign.c_fix.patch ./
-           patch -p1 -F 3 < apk_sign.c_fix.patch
-             
+           cd           
            cp ../kernel_patches/core_hook.c_fix.patch ./
            patch -p1 --fuzz=3 < ./core_hook.c_fix.patch
            
