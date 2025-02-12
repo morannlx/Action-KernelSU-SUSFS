@@ -102,7 +102,8 @@ jobs:
         run: |
          git clone https://github.com/Kernel-SU/AnyKernel3 --depth=1
          rm -rf ./AnyKernel3/.git
-         cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./AnyKernel3/
+         ls
+         cp kernel_workspace/kernel_platform/out/dist/Image ./AnyKernel3/
 
       - name: Upload AnyKernel3
         uses: actions/upload-artifact@v4
