@@ -22,7 +22,7 @@ on:
         description: "内核版本"
         required: true
         default: '6.1'
-      KSUNEXT_ENABLED:
+      MKSU_ENABLED:
         description: "添加 MKSU"
         required: true
         type: boolean
@@ -35,7 +35,7 @@ on:
       KERNEL_NAME:
         description: "自定义内核版本名"
         required: false
-        default: ''
+        default: 'inkdye-compile'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -76,9 +76,12 @@ jobs:
          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
          sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
          sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
+         if [ -n "${{ github.event.inputs.KERNEL_NAME }}" ]; then
+           sed -i '$s|echo "\$res"|echo "-${{ github.event.inputs.KERNEL_NAME }}"|' kernel_platform/common/scripts/setlocalversion
+         fi
 
       - name: Set up MKernelSU
-        if: github.event.inputs.KSUNEXT_ENABLED == 'true'
+        if: github.event.inputs.MKSU_ENABLED == 'true'
         run: |
          cd kernel_workspace/kernel_platform
          curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
@@ -101,7 +104,7 @@ jobs:
 
            # Apply patches
            cd ./KernelSU
-           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+           patch -p1 < 10_enable_susfs_for_ksu.patch || true
            cd ../common
            patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
           
