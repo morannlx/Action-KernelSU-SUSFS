@@ -35,7 +35,7 @@ on:
       KERNEL_NAME:
         description: "自定义内核版本名"
         required: false
-        default: 'inkdye-compile'
+        default: '-inkdye-compile'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -104,7 +104,7 @@ jobs:
 
            # Apply patches
            cd ./KernelSU
-           patch -p1 < 10_enable_susfs_for_ksu.patch || true
+           #patch -p1 < 10_enable_susfs_for_ksu.patch || true
            cd ../common
            patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
           
