@@ -1,4 +1,4 @@
-name: Build MKernelSUMSUSFS
+name: Build Magic mount on Kernelsu
 on:
   workflow_dispatch:
     inputs:
@@ -23,7 +23,7 @@ on:
         required: true
         default: '6.1'
       MKSU_ENABLED:
-        description: "添加 MKSU"
+        description: "添加 mKSU"
         required: true
         type: boolean
         default: false
@@ -80,7 +80,7 @@ jobs:
            sed -i '$s|echo "\$res"|echo "-${{ github.event.inputs.KERNEL_NAME }}"|' kernel_platform/common/scripts/setlocalversion
          fi
 
-      - name: Set up MKernelSU
+      - name: Set up mKernelSU
         if: github.event.inputs.MKSU_ENABLED == 'true'
         run: |
          cd kernel_workspace/kernel_platform
@@ -95,22 +95,23 @@ jobs:
         run: |
            cd kernel_workspace
            git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
-           git clone https://github.com/TheWildJames/kernel_patches.git
+           git clone git clone https://github.com/TanakaLun/kernel_patches4mksu.git
            cd kernel_platform
            cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU/
-           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
+           cp ../kernel_patches4mksu/mksu_susfs.patch ./KernelSU/
+           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./common/
            cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
            # Apply patches
            cd ./KernelSU
-           #patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
-           cp ../../kernel_patches/mksu_susfs.patch ../KernelSU/
-           patch -p1 < mksu_susfs.patch
+           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+           patch -p1 --forward < mksu_susfs.patch || true
            cd ../common
-           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
-  
-
+           patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
+           cp ../../kernel_patches4mksu/69_hide_stuff.patch ./
+           patch -p1 -F 3 < 69_hide_stuff.patch
+           
       - name: Build kernel
         run: |
          cd kernel_workspace
