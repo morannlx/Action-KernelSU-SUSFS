@@ -35,7 +35,7 @@ on:
       KERNEL_NAME:
         description: "自定义内核版本名"
         required: false
-        default: 'inkdye-compile-test'
+        default: 'android14-11-o-ga848fedad3a3'
 jobs:
   build:
     runs-on: ubuntu-latest
