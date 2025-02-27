@@ -1,4 +1,4 @@
-jname: Build Magic mount on Kernelsu
+name: Build Magic mount on Kernelsu
 on:
   workflow_dispatch:
     inputs:
