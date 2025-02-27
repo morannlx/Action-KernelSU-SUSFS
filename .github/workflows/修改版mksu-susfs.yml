@@ -1,4 +1,4 @@
-name: Build MKSU-SUSFS For OnePlus Kernel 6.1 Devices
+name: Build MKSU-SKN-SUSFS For OnePlus ACE3V
 on:
   workflow_dispatch:
    inputs:
@@ -75,29 +75,29 @@ jobs:
         if: github.event.inputs.SUSFS_ENABLED == 'true'
         run: |
            cd kernel_workspace
-           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1
-           git clone https://github.com/TanakaLun/kernel_patches4mksu.git
+           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
+           git clone https://github.com/WildPlusKernel/kernel_patches.git
+           git clone https://github.com/yuhangle/Action-KernelSU-Next -b dev
            cd kernel_platform
+           cp ../kernel_patches/mksu_susfs.patch ./KernelSU/
            cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU/
-           cp ../kernel_patches4mksu/mksu_susfs.patch ./KernelSU/
-           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./common/
+           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
            cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-
+           cp ../Action-KernelSU-Next/mksu_patch/kernel/* ./KernelSU/
            # Apply patches
            cd ./KernelSU
            patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
            patch -p1 --forward < mksu_susfs.patch || true
+           # 三次修补
+           cd kernel
+           patch < ../core_hook.c.patch || true
+           patch < ../sucompat.c.patch || true
+           cd ..
            cd ../common
-           patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
-           cp ../../kernel_patches4mksu/69_hide_stuff.patch ./
+           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
+           cp ../../kernel_patches/69_hide_stuff.patch ./
            patch -p1 -F 3 < 69_hide_stuff.patch
-           cp ../../kernel_patches4mksu/core_hook.c_fix.patch ./
-           patch -p1 --fuzz=3 < ./core_hook.c_fix.patch
-           git add -A && git commit -a -m "BUILD Kernel"
-           cd ..
-           cd ./msm-kernel && git add -A && git commit -a -m "BUILD Kernel"
-           cd ..
            
       - name: Build kernel
         run: |
